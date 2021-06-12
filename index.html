@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8" />
+
+<head>
+    <title>TimeLock</title>
+    <link rel="stylesheet" href="vault.css">
+</head>
+
+<body>
+    <div class="printView" id="printView"></div>
+    <div class="mainView" id="mainView">
+        <div class="header">
+            <span class="firstName">Time</span>Lock<span class="slogan">worlds first static timelock vault (beta)</span>
+        </div>
+        <div class="rsa">
+            <div class="rsaHeader">RSA 2048-bit</div>
+            <div class="timelock">
+                <input class="checkbox" type="checkbox" onclick="vaultMainController.toggleApplyTimeLock()">Apply
+                timelock
+                until
+                <select name="month" id="monthSelect" disabled>
+                    <option value="01" selected>Jan.</option>
+                    <option value="02">Feb.</option>
+                    <option value="03">Mar.</option>
+                    <option value="04">Apr.</option>
+                    <option value="05">May</option>
+                    <option value="06">Jun.</option>
+                    <option value="07">Jul.</option>
+                    <option value="08">Aug.</option>
+                    <option value="09">Sep.</option>
+                    <option value="10">Oct.</option>
+                    <option value="11">Nov.</option>
+                    <option value="12">Dec.</option>
+                </select> / <select name="year" id="yearSelect" disabled>
+                    <option value="2021" selected>2021</option>
+                    <option value="2022">2022</option>
+                </select>
+                <div class="timelockWarning">Warning: Message cannot be unlocked before selected date!</div>
+            </div>
+            <div class="aes">
+                <div class="aesHeader">AES 256-bit</div>
+                <div class="passwordField"><input id="passwordField" type="password" placeholder="Apply Password"
+                        onkeyup="vaultMainController.calcPasswordChecksum()" />
+                    <span class="checksumElement" id="checksumElement">CHECK</span>
+                </div>
+                <div class="actionButtons">
+                    <input class="checkbox" type="checkbox" onclick="vaultMainController.toggleShowPassword()">Show
+                    Password
+                    <button id="lockButton" onclick="vaultMainController.cryptMessage()" disabled>(Un)lock</button>
+                    <button id="copyButton" onclick="vaultMainController.copyMessage()" disabled>Copy</button>
+                    <button id="printButton" onclick="vaultMainController.printMessage()" disabled>Print</button>
+                    <button id="clearButton" onclick="vaultMainController.setAndCountMessage('')"
+                        disabled>Clear</button>
+                </div>
+                <div><textarea id="messageField" placeholder="Secret Message"
+                        onchange="vaultMainController.countMessage()"
+                        onkeyup="vaultMainController.countMessage()"></textarea>
+                </div>
+                <div id="messageLengthElement"></div>
+            </div>
+        </div>
+        <div class="keyboardButtons">
+            <div>
+                <button onclick="vaultKeyboardController.press('1')">1</button>
+                <button onclick="vaultKeyboardController.press('2')">2</button>
+                <button onclick="vaultKeyboardController.press('3')">3</button>
+                <button onclick="vaultKeyboardController.press('4')">4</button>
+                <button onclick="vaultKeyboardController.press('5')">5</button>
+                <button onclick="vaultKeyboardController.press('6')">6</button>
+                <button onclick="vaultKeyboardController.press('7')">7</button>
+                <button onclick="vaultKeyboardController.press('8')">8</button>
+                <button onclick="vaultKeyboardController.press('9')">9</button>
+                <button onclick="vaultKeyboardController.press('0')">0</button>
+            </div>
+            <div>
+                <button onclick="vaultKeyboardController.press('q')">q</button>
+                <button onclick="vaultKeyboardController.press('w')">w</button>
+                <button onclick="vaultKeyboardController.press('e')">e</button>
+                <button onclick="vaultKeyboardController.press('r')">r</button>
+                <button onclick="vaultKeyboardController.press('t')">t</button>
+                <button onclick="vaultKeyboardController.press('y')">y</button>
+                <button onclick="vaultKeyboardController.press('u')">u</button>
+                <button onclick="vaultKeyboardController.press('i')">i</button>
+                <button onclick="vaultKeyboardController.press('o')">o</button>
+                <button onclick="vaultKeyboardController.press('p')">p</button>
+            </div>
+            <div>
+                <button onclick="vaultKeyboardController.press('a')">a</button>
+                <button onclick="vaultKeyboardController.press('s')">s</button>
+                <button onclick="vaultKeyboardController.press('d')">d</button>
+                <button onclick="vaultKeyboardController.press('f')">f</button>
+                <button onclick="vaultKeyboardController.press('g')">g</button>
+                <button onclick="vaultKeyboardController.press('h')">h</button>
+                <button onclick="vaultKeyboardController.press('j')">j</button>
+                <button onclick="vaultKeyboardController.press('k')">k</button>
+                <button onclick="vaultKeyboardController.press('l')">l</button>
+            </div>
+            <div>
+                <button id="capsLockButton" onclick="vaultKeyboardController.press('^')">[^]</button>
+                <button onclick="vaultKeyboardController.press('z')">z</button>
+                <button onclick="vaultKeyboardController.press('x')">x</button>
+                <button onclick="vaultKeyboardController.press('c')">c</button>
+                <button onclick="vaultKeyboardController.press('v')">v</button>
+                <button onclick="vaultKeyboardController.press('b')">b</button>
+                <button onclick="vaultKeyboardController.press('n')">n</button>
+                <button onclick="vaultKeyboardController.press('m')">m</button>
+                <button onclick="vaultKeyboardController.press('-')">-</button>
+            </div>
+            <div>
+                <button onclick="vaultKeyboardController.press(' ')">[space]</button>
+            </div>
+        </div>
+        <div class="footer">
+            © Copyright 2021 50bits | <a href="https://github.com/50bits/timelock/">Project & Documentation</a>
+        </div>
+    </div>
+    <script src="keys.js"></script>
+    <script src="vault.js"></script>
+    <script>
+        let vaultMainController = new VaultMainController(
+            document.getElementById("printView"),
+            document.getElementById("mainView"),
+            document.getElementById("yearSelect"),
+            document.getElementById("monthSelect"),
+            document.getElementById("passwordField"),
+            document.getElementById("checksumElement"),
+            document.getElementById("lockButton"),
+            document.getElementById("copyButton"),
+            document.getElementById("printButton"),
+            document.getElementById("clearButton"),
+            document.getElementById("messageField"),
+            document.getElementById("messageLengthElement")
+
+        );
+
+        let vaultKeyboardController = new VaultKeyboardController(
+            vaultMainController,
+            document.getElementById("capsLockButton")
+        );
+    </script>
+</body>
+
+</html>
