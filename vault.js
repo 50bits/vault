@@ -428,7 +428,6 @@ class VaultMainController {
     }
 
     printMessage() {
-        const url = 
         this.printView.textContent = this.messageField.value;
         this.mainView.textContent = "";
     }
