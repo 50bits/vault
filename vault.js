@@ -149,7 +149,7 @@ class VaultCrypto {
         try {
             new VaultCypher(str);
             return true;
-        } catch(err) {
+        } catch (err) {
             return false;
         }
     }
@@ -324,10 +324,10 @@ class VaultCrypto {
                 }
                 return await this.rsaDecryptFlow(privateKey, cypher);
             }
-        } catch(err) {
+        } catch (err) {
             if (timeLockDate) {
-                    const publicKey = vaultKeys[timeLockDate].publicKey
-                    return await this.rsaEncryptFlow(publicKey, message, timeLockDate);
+                const publicKey = vaultKeys[timeLockDate].publicKey
+                return await this.rsaEncryptFlow(publicKey, message, timeLockDate);
             } else {
                 return await this.aesEncryptFlow(password, message);
             }
