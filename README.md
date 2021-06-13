@@ -1,5 +1,7 @@
 # TimeLock - worlds first static timelock vault (beta)
-[TimeLock](https://50bits.github.io/timelock/)
+Deployment: [TimeLock](https://50bits.github.io/timelock/)
+
+Copyright (C) 2021 50bits
 
 ## Why using it
 I case of an emergency your family probably needs to access:
