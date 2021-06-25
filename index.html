@@ -3,7 +3,7 @@
 <meta charset="UTF-8" />
 
 <head>
-    <title>TimeLock</title>
+    <title>TimeVault</title>
     <link rel="stylesheet" href="vault.css">
 </head>
 
@@ -11,32 +11,28 @@
     <div class="printView" id="printView"></div>
     <div class="mainView" id="mainView">
         <div class="header">
-            <span class="firstName">Time</span>Lock<span class="slogan">worlds first static timelock vault (beta)</span>
+            <span class="firstName">Time</span>Vault<span class="slogan">worlds first static timelock vault</span>
         </div>
         <div class="rsa">
-            <div class="rsaHeader">RSA 2048-bit</div>
+            <div class="rsaHeader">RSA 4096-bit</div>
             <div class="timelock">
-                <input class="checkbox" type="checkbox" onclick="vaultMainController.toggleApplyTimeLock()">Apply
+                <input class="checkbox" type="checkbox" id="timelockCheckbox" onclick="vaultMainController.toggleApplyTimeLock()">Apply
                 timelock
                 until
-                <select name="month" id="monthSelect" disabled>
-                    <option value="01" selected>Jan.</option>
-                    <option value="02">Feb.</option>
-                    <option value="03">Mar.</option>
-                    <option value="04">Apr.</option>
-                    <option value="05">May</option>
-                    <option value="06">Jun.</option>
-                    <option value="07">Jul.</option>
-                    <option value="08">Aug.</option>
-                    <option value="09">Sep.</option>
-                    <option value="10">Oct.</option>
-                    <option value="11">Nov.</option>
-                    <option value="12">Dec.</option>
-                </select> / <select name="year" id="yearSelect" disabled>
-                    <option value="2021" selected>2021</option>
-                    <option value="2022">2022</option>
+                <select name="year" id="yearSelect" disabled>
+                    <option value="2021">2021</option>
+                    <option value="2022" selected>2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
+                    <option value="2031">2031</option>
                 </select>
-                <div class="timelockWarning">Warning: Message cannot be unlocked before selected date!</div>
+                <div class="timelockWarning">Warning: Message cannot be unlocked before selected year!</div>
             </div>
             <div class="aes">
                 <div class="aesHeader">AES 256-bit</div>
@@ -112,7 +108,7 @@
             </div>
         </div>
         <div class="footer">
-            Copyright (C) 2021 50bits | <a href="https://github.com/50bits/timelock/">Project & Documentation</a> | <a
+            Copyright (C) 2021, 50bits | <a href="https://github.com/50bits/timevault/">Project & Documentation</a> | <a
                 href="https://50bits.github.io/qrcode/">QR Code Generator</a>
         </div>
     </div>
@@ -122,8 +118,8 @@
         let vaultMainController = new VaultMainController(
             document.getElementById("printView"),
             document.getElementById("mainView"),
+            document.getElementById("timelockCheckbox"),
             document.getElementById("yearSelect"),
-            document.getElementById("monthSelect"),
             document.getElementById("passwordField"),
             document.getElementById("checksumElement"),
             document.getElementById("lockButton"),

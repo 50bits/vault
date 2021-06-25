@@ -1,7 +1,7 @@
-# TimeLock - worlds first static timelock vault (beta)
-Deployment: [TimeLock](https://50bits.github.io/timelock/)
+# TimeVault - worlds first static timelock vault
+Deployment: [TimeVault](https://50bits.github.io/timevault/)
 
-Copyright (C) 2021 50bits
+Copyright (C) 2021, 50bits
 
 ## Why using it
 I case of an emergency your family probably needs to access:
@@ -9,10 +9,10 @@ I case of an emergency your family probably needs to access:
 * Your password manager: So they can handle your accounts
 * Your crypto wallets: That your money is not lost completely
 
-TimeLock is an easy and secure way to take care no matter what happens to yourself.
+TimeVault is an easy and secure way to leave a message for the future no matter what happens to yourself.
 
 ## How it works
-* Open the static TimeLock page: [TimeLock](https://50bits.github.io/timelock/)
+* Open the static TimeVault page: [TimeVault](https://50bits.github.io/timevault/)
 * Apply a timelock that keeps your secret message locked until the selected date is reached
 * Or apply a password that secures your secret message without any timelock
 * Enter your secret message
@@ -22,7 +22,7 @@ TimeLock is an easy and secure way to take care no matter what happens to yourse
 ## Secret message examples
 * Password and 2-factor one-time codes or 2-factor recovery code of your password manager account
 * 12-words recovery phrase of your crypto wallet
-* Any other message you would like to provide to take care
+* Any other message you would like to leave for the future
 
 ## Why it is secure
 * 100% open source and easy to review

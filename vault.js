@@ -1,6 +1,6 @@
 const vaultCypherType = {
     AES_256: 1,
-    RSA_2048: 2
+    RSA_4096: 2
 };
 
 class VaultUtil {
@@ -119,24 +119,24 @@ let vaultChecksum = new VaultChecksum();
 class VaultCypher {
     constructor(str) {
         if (!str) return;
-        let c = JSON.parse(str);
-        this.type = parseInt(c.type);
-        this.time = c.time;
-        this.key = vaultUtil.fromB64(c.key);
-        this.salt = vaultUtil.fromB64(c.salt);
-        this.iv = vaultUtil.fromB64(c.iv);
-        this.data = vaultUtil.fromB64(c.data);
+        let obj = JSON.parse(str);
+        this.type = parseInt(obj.type);
+        this.time = obj.time;
+        this.key = vaultUtil.fromB64(obj.key);
+        this.salt = vaultUtil.fromB64(obj.salt);
+        this.iv = vaultUtil.fromB64(obj.iv);
+        this.data = vaultUtil.fromB64(obj.data);
     }
 
     stringify() {
-        let c = {};
-        c.type = this.type;
-        c.time = this.time;
-        c.key = vaultUtil.toB64(this.key);
-        c.salt = vaultUtil.toB64(this.salt);
-        c.iv = vaultUtil.toB64(this.iv);
-        c.data = vaultUtil.toB64(this.data);
-        return JSON.stringify(c);
+        let obj = {};
+        obj.type = this.type;
+        obj.time = this.time;
+        obj.key = vaultUtil.toB64(this.key);
+        obj.salt = vaultUtil.toB64(this.salt);
+        obj.iv = vaultUtil.toB64(this.iv);
+        obj.data = vaultUtil.toB64(this.data);
+        return JSON.stringify(obj);
     }
 }
 
@@ -291,10 +291,10 @@ class VaultCrypto {
         return vaultUtil.toUtf8(await this.aesDecrypt(key, cypher.iv, cypher.data));
     }
 
-    async rsaEncryptFlow(publicKey, message, timeLockDate) {
+    async rsaEncryptFlow(publicKey, message, time) {
         let cypher = new VaultCypher();
-        cypher.type = vaultCypherType.RSA_2048;
-        cypher.time = timeLockDate;
+        cypher.type = vaultCypherType.RSA_4096;
+        cypher.time = time;
         let aesKey = await this.aesGenerateAndExportKey();
         let importedPublicKey = await this.rsaImportPublicKey(publicKey);
         cypher.key = await this.rsaEncrypt(importedPublicKey, JSON.stringify(aesKey));
@@ -311,23 +311,23 @@ class VaultCrypto {
         return vaultUtil.toUtf8(await this.aesDecrypt(importedAesKey, cypher.iv, cypher.data));
     }
 
-    async autoCryptFlow(password, message, timeLockDate) {
+    async autoCryptFlow(password, message, time) {
         try {
             let cypher = new VaultCypher(message);
             if (cypher.type == vaultCypherType.AES_256) {
                 return await this.aesDecryptFlow(password, cypher);
-            } else if (cypher.type == vaultCypherType.RSA_2048) {
+            } else if (cypher.type == vaultCypherType.RSA_4096) {
                 const privateKey = vaultKeys[cypher.time].privateKey;
                 if (!privateKey) {
-                    alert("Message cannot be unlocked before " + cypher.time);
+                    alert("Message cannot be unlocked before year " + cypher.time);
                     return message;
                 }
                 return await this.rsaDecryptFlow(privateKey, cypher);
             }
         } catch (err) {
-            if (timeLockDate) {
-                const publicKey = vaultKeys[timeLockDate].publicKey
-                return await this.rsaEncryptFlow(publicKey, message, timeLockDate);
+            if (time) {
+                const publicKey = vaultKeys[time].publicKey
+                return await this.rsaEncryptFlow(publicKey, message, time);
             } else {
                 return await this.aesEncryptFlow(password, message);
             }
@@ -340,11 +340,11 @@ let vaultCrypto = new VaultCrypto();
 class VaultMainController {
     applyTimeLock = false;
 
-    constructor(printView, mainView, yearSelect, monthSelect, passwordField, checksumElement, lockButton, copyButton, printButton, clearButton, messageField, messageLengthElement) {
+    constructor(printView, mainView, timelockCheckbox, yearSelect, passwordField, checksumElement, lockButton, copyButton, printButton, clearButton, messageField, messageLengthElement) {
         this.printView = printView;
         this.mainView = mainView;
+        this.timelockCheckbox = timelockCheckbox;
         this.yearSelect = yearSelect;
-        this.monthSelect = monthSelect;
         this.passwordField = passwordField;
         this.checksumElement = checksumElement;
         this.lockButton = lockButton;
@@ -355,7 +355,10 @@ class VaultMainController {
         this.messageLengthElement = messageLengthElement;
     }
 
-    updateButtons() {
+    updateVisibility() {
+        this.timelockCheckbox.checked = this.applyTimeLock;
+        this.yearSelect.disabled = !this.applyTimeLock;
+        this.passwordField.disabled = this.applyTimeLock;
         this.lockButton.disabled = (!this.applyTimeLock && !this.passwordField.value && !vaultCrypto.isCypher(this.messageField.value)) || !this.messageField.value;
         this.copyButton.disabled = !vaultCrypto.isCypher(this.messageField.value);
         this.printButton.disabled = !vaultCrypto.isCypher(this.messageField.value);
@@ -364,10 +367,7 @@ class VaultMainController {
 
     toggleApplyTimeLock() {
         this.applyTimeLock = !this.applyTimeLock;
-        this.yearSelect.disabled = !this.applyTimeLock;
-        this.monthSelect.disabled = !this.applyTimeLock;
-        this.passwordField.disabled = this.applyTimeLock;
-        this.updateButtons();
+        this.updateVisibility();
     }
 
     toggleShowPassword() {
@@ -391,12 +391,12 @@ class VaultMainController {
     calcPasswordChecksum() {
         let passwordChecksum = this.checksum(this.passwordField.value);
         this.checksumElement.textContent = passwordChecksum.toUpperCase();
-        this.updateButtons();
+        this.updateVisibility();
     }
 
     countMessage() {
         this.messageLengthElement.textContent = this.messageField.value.length;
-        this.updateButtons();
+        this.updateVisibility();
     }
 
     setAndCountMessage(str) {
@@ -412,11 +412,11 @@ class VaultMainController {
         const password = this.passwordField.value;
         let message = this.messageField.value;
         if (!message) return;
-        let unlockDate;
+        let time;
         if (this.applyTimeLock) {
-            unlockDate = this.monthSelect.value + "/" + this.yearSelect.value;
+            time = this.yearSelect.value;
         }
-        let cryptResult = await vaultCrypto.autoCryptFlow(password, message, unlockDate);
+        let cryptResult = await vaultCrypto.autoCryptFlow(password, message, time);
         this.setAndCountMessage(cryptResult);
     }
 
