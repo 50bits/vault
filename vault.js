@@ -1,4 +1,4 @@
-const vaultCypherType = {
+const VAULT_CYPHER_TYPE = {
     AES_256: 1,
     RSA_4096: 2
 };
@@ -128,8 +128,13 @@ class VaultCypher {
         this.data = vaultUtil.fromB64(obj.data);
     }
 
+    isValid() {
+        return (this.type == VAULT_CYPHER_TYPE.AES_256 || this.type == VAULT_CYPHER_TYPE.RSA_4096) && this.iv && this.data;
+    }
+
     stringify() {
         let obj = {};
+        obj.href = window.location.href;
         obj.type = this.type;
         obj.time = this.time;
         obj.key = vaultUtil.toB64(this.key);
@@ -147,8 +152,7 @@ class VaultCrypto {
     isCypher(str) {
         if (!str) return false;
         try {
-            new VaultCypher(str);
-            return true;
+            return new VaultCypher(str).isValid();
         } catch (err) {
             return false;
         }
@@ -278,7 +282,7 @@ class VaultCrypto {
 
     async aesEncryptFlow(password, message) {
         let cypher = new VaultCypher();
-        cypher.type = vaultCypherType.AES_256;
+        cypher.type = VAULT_CYPHER_TYPE.AES_256;
         cypher.salt = window.crypto.getRandomValues(new Uint8Array(16));
         cypher.iv = window.crypto.getRandomValues(new Uint8Array(16));
         let key = await this.aesImportAndDeriveKey(password, cypher.salt);
@@ -293,7 +297,7 @@ class VaultCrypto {
 
     async rsaEncryptFlow(publicKey, message, time) {
         let cypher = new VaultCypher();
-        cypher.type = vaultCypherType.RSA_4096;
+        cypher.type = VAULT_CYPHER_TYPE.RSA_4096;
         cypher.time = time;
         let aesKey = await this.aesGenerateAndExportKey();
         let importedPublicKey = await this.rsaImportPublicKey(publicKey);
@@ -312,18 +316,9 @@ class VaultCrypto {
     }
 
     async autoCryptFlow(password, message, time) {
+        let cypher = {};
         try {
-            let cypher = new VaultCypher(message);
-            if (cypher.type == vaultCypherType.AES_256) {
-                return await this.aesDecryptFlow(password, cypher);
-            } else if (cypher.type == vaultCypherType.RSA_4096) {
-                const privateKey = vaultKeys[cypher.time].privateKey;
-                if (!privateKey) {
-                    alert("Message cannot be unlocked before year " + cypher.time);
-                    return message;
-                }
-                return await this.rsaDecryptFlow(privateKey, cypher);
-            }
+            cypher = new VaultCypher(message);
         } catch (err) {
             if (time) {
                 const publicKey = vaultKeys[time].publicKey
@@ -331,6 +326,16 @@ class VaultCrypto {
             } else {
                 return await this.aesEncryptFlow(password, message);
             }
+        }
+        if (cypher.type == VAULT_CYPHER_TYPE.AES_256) {
+            return await this.aesDecryptFlow(password, cypher);
+        } else if (cypher.type == VAULT_CYPHER_TYPE.RSA_4096) {
+            const privateKey = vaultKeys[cypher.time].privateKey;
+            if (!privateKey) {
+                alert("Message cannot be unlocked before year " + cypher.time);
+                return message;
+            }
+            return await this.rsaDecryptFlow(privateKey, cypher);
         }
         return message;
     }
