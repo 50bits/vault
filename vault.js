@@ -48,6 +48,38 @@ class VaultUtil {
     toHex(dec) {
         return Number(dec).toString(16);
     }
+
+    invertHex(hex) {
+        return (Number(`0x1${hex}`) ^ 0xFFFFFF).toString(16).substr(1).toUpperCase();
+    }
+
+    invertColor(hex, bw) {
+        if (hex.indexOf('#') === 0) {
+            hex = hex.slice(1);
+        }
+        // convert 3-digit hex to 6-digits.
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        if (hex.length !== 6) {
+            throw new Error('Invalid HEX color.');
+        }
+        var r = parseInt(hex.slice(0, 2), 16),
+            g = parseInt(hex.slice(2, 4), 16),
+            b = parseInt(hex.slice(4, 6), 16);
+        if (bw) {
+            // http://stackoverflow.com/a/3943023/112731
+            return (r * 0.299 + g * 0.587 + b * 0.114) > 186
+                ? '#000000'
+                : '#FFFFFF';
+        }
+        // invert color components
+        r = (255 - r).toString(16);
+        g = (255 - g).toString(16);
+        b = (255 - b).toString(16);
+        // pad each with zeros and return
+        return "#" + padZero(r) + padZero(g) + padZero(b);
+    }
 }
 let vaultUtil = new VaultUtil();
 
@@ -120,6 +152,9 @@ class VaultCypher {
     constructor(str) {
         if (!str) return;
         let obj = JSON.parse(str);
+        if (typeof obj == "number") {
+            throw 'Could not parse to object';
+        }
         this.type = parseInt(obj.type);
         this.time = obj.time;
         this.key = vaultUtil.fromB64(obj.key);
@@ -129,12 +164,17 @@ class VaultCypher {
     }
 
     isValid() {
-        return (this.type == VAULT_CYPHER_TYPE.AES_256 || this.type == VAULT_CYPHER_TYPE.RSA_4096) && this.iv && this.data;
+        if (this.type == VAULT_CYPHER_TYPE.AES_256 && this.salt && this.iv && this.data) {
+            return true;
+        }
+        if (this.type == VAULT_CYPHER_TYPE.RSA_4096 && this.time && this.key && this.iv && this.data) {
+            return true;
+        }
+        return false;
     }
 
     stringify() {
         let obj = {};
-        obj.href = window.location.href;
         obj.type = this.type;
         obj.time = this.time;
         obj.key = vaultUtil.toB64(this.key);
@@ -345,19 +385,20 @@ let vaultCrypto = new VaultCrypto();
 class VaultMainController {
     applyTimeLock = false;
 
-    constructor(printView, mainView, timelockCheckbox, yearSelect, passwordField, checksumElement, lockButton, copyButton, printButton, clearButton, messageField, messageLengthElement) {
+    constructor(printView, mainView, timelockCheckbox, yearSelect, passwordField, checksumElement, checksumColorElement, lockButton, copyButton, printButton, clearButton, messageField, messageSizeElement) {
         this.printView = printView;
         this.mainView = mainView;
         this.timelockCheckbox = timelockCheckbox;
         this.yearSelect = yearSelect;
         this.passwordField = passwordField;
         this.checksumElement = checksumElement;
+        this.checksumColorElement = checksumColorElement;
         this.lockButton = lockButton;
         this.copyButton = copyButton;
         this.printButton = printButton;
         this.clearButton = clearButton;
         this.messageField = messageField;
-        this.messageLengthElement = messageLengthElement;
+        this.messageSizeElement = messageSizeElement;
     }
 
     updateVisibility() {
@@ -396,11 +437,13 @@ class VaultMainController {
     calcPasswordChecksum() {
         let passwordChecksum = this.checksum(this.passwordField.value);
         this.checksumElement.textContent = passwordChecksum.toUpperCase();
+        this.checksumColorElement.style.backgroundColor = "#" + passwordChecksum;
+        this.checksumColorElement.style.color = "#" + vaultUtil.invertColor(passwordChecksum);
         this.updateVisibility();
     }
 
     countMessage() {
-        this.messageLengthElement.textContent = this.messageField.value.length;
+        this.messageSizeElement.textContent = this.messageField.value.length;
         this.updateVisibility();
     }
 
