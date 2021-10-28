@@ -38,7 +38,7 @@
                 <div class="aesHeader">AES 256-bit</div>
                 <div class="passwordField"><input id="passwordField" type="password" placeholder="Apply Password"
                         onkeyup="vaultMainController.calcPasswordChecksum()" />
-                    <span class="checksumElement" id="checksumElement">CHECKSUM</span>
+                    <span class="checksumElement" id="checksumElement"></span>
                 </div>
                 <div class="actionButtons">
                     <input class="checkbox" type="checkbox" onclick="vaultMainController.toggleShowPassword()">Show
@@ -53,7 +53,7 @@
                         onchange="vaultMainController.countMessage()"
                         onkeyup="vaultMainController.countMessage()"></textarea>
                 </div>
-                <div id="messageSizeElement">SIZE</div>
+                <div id="messageSizeElement"></div>
             </div>
         </div>
         <div class="keyboardButtons">
